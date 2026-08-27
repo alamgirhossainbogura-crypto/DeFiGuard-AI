@@ -62,17 +62,17 @@ cd DeFiGuard-AI```
 ### 2. Install Dependencies:
 ```bash
 pip install -r requirements.txt
-```
 
+```
 ### 3. Configure Environment Variables:
-​```env
+```env
 Create a .env file in the root directory based on .env.example and add your API keys:
 GEMINI_API_KEY=your_google_gemini_api_key_here
 ELASTIC_ENDPOINT=your_elasticsearch_endpoint_here
 ELASTIC_API_KEY=your_elasticsearch_api_key_here
 4. Run the Backend Server
     cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload```
 ```
 ```
 ### 5. Launch the Frontend Dashboard
