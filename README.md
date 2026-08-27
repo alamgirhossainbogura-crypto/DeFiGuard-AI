@@ -52,16 +52,18 @@ DeFiGuard-AI/
 ​Database & Retrieval: Elasticsearch
 ​Frontend: Streamlit, Requests
 
-## ​🚀 Getting Started & Local Setup
+#### 🚀 Getting Started & Local Setup
 
-​1.  Clone the Repository 
+#### 1. Clone the Repository
+```bash
 git clone [https://github.com/alamgirhossainbogura-crypto/DeFiGuard-AI.git](https://github.com/alamgirhossainbogura-crypto/DeFiGuard-AI.git)
-cd DeFiGuard-AI
-
-2. Install Dependencies
+cd DeFiGuard-AI```
+```
+### 2. Install Dependencies:
 pip install -r requirements.txt
-
-3. Configure Environment Variables
+```
+```
+### 3. Configure Environment Variables:
 ​Create a .env file in the root directory based on .env.example and add your API keys:
 GEMINI_API_KEY=your_google_gemini_api_key_here
 ELASTIC_ENDPOINT=your_elasticsearch_endpoint_here
@@ -69,10 +71,13 @@ ELASTIC_API_KEY=your_elasticsearch_api_key_here
 4. Run the Backend Server
     cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-5. Launch the Frontend Dashboard
+```
+```
+### 5. Launch the Frontend Dashboard
 ​Open a new terminal window, navigate to the project root, and run:
+
 streamlit run frontend/app.py
+```
 ---
 ## 📄 License
 ​Distributed under the Apache 2.0 License. See LICENSE for more information.
