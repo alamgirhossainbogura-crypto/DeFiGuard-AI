@@ -23,7 +23,7 @@ DeFiGuard-AI is an autonomous multi-agent security platform engineered to inspec
 
 ## 🏗️ Architecture & Project Structure
 
-text
+```text
 DeFiGuard-AI/
 │
 ├── agent_runtime/
@@ -43,6 +43,7 @@ DeFiGuard-AI/
 ├── LICENSE                    # Apache 2.0 License
 ├── README.md                  # Project Documentation
 └── requirements.txt           # Python dependencies
+```
 ---
 
 ## ⚙️ Tech Stack
