@@ -73,7 +73,7 @@ ELASTIC_API_KEY=your_elasticsearch_api_key_here
 4. Run the Backend Server
     cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload```
-```
+
 ```
 ### 5. Launch the Frontend Dashboard
 ```bash
