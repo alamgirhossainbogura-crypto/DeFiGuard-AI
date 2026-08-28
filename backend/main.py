@@ -7,18 +7,16 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 from agent_runtime.runner import run_scan
+from retrieval.firestore_client import ScanHistoryClient
 
 load_dotenv()
 
 app = FastAPI(
     title="DeFiGuard AI API",
     description="Autonomous Smart Contract & DeFi Risk Intelligence Platform",
-    version="2.0.0",
+    version="2.1.0",
 )
 
-# CORS: explicit origins from env, no wildcard - fixes the open-CORS issue
-# from v1. ALLOWED_ORIGINS is a comma-separated list, e.g.
-# "http://localhost:8501,https://your-frontend.run.app"
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8501").split(",")
 
 app.add_middleware(
@@ -29,7 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MAX_CONTRACT_CODE_LENGTH = 50_000  # guard against oversized payloads driving up Gemini cost
+history_client = ScanHistoryClient()
+
+MAX_CONTRACT_CODE_LENGTH = 50_000
 
 
 class ScanRequest(BaseModel):
@@ -47,9 +47,8 @@ def read_root():
 @app.post("/run-scan")
 async def run_contract_scan(request: ScanRequest):
     """
-    Triggers the autonomous ADK agent pipeline, which combines Gemini
-    code reasoning with Elasticsearch historical pattern retrieval.
-    The agent itself decides when to call the retrieval tool.
+    Triggers the autonomous ADK agent pipeline, then persists the result
+    to Firestore for scan history.
     """
     if not request.contract_code.strip():
         raise HTTPException(status_code=400, detail="Smart contract code cannot be empty or whitespace.")
@@ -64,7 +63,6 @@ Smart contract code:
 {request.contract_code}
 """
 
-    # New user/session id per scan - stateless from the API's point of view.
     session_id = str(uuid.uuid4())
 
     try:
@@ -73,8 +71,16 @@ Smart contract code:
             session_id=session_id,
             prompt=prompt,
         )
+
+        scan_id = await history_client.save_scan(
+            contract_name=request.contract_name,
+            chain_type=request.chain_type,
+            ai_analysis=analysis_text,
+        )
+
         return {
             "status": "success",
+            "scan_id": scan_id,
             "contract_name": request.contract_name,
             "chain_type": request.chain_type,
             "ai_analysis": analysis_text,
@@ -82,12 +88,17 @@ Smart contract code:
     except HTTPException:
         raise
     except Exception:
-        # Never leak raw exception text to the client - log server-side instead.
-        # Wire this up to real logging (e.g. Cloud Logging) before deployment.
         raise HTTPException(
             status_code=500,
             detail="An internal error occurred while processing the smart contract scan.",
         )
+
+
+@app.get("/scan-history")
+async def get_scan_history(limit: int = 10):
+    """Returns recent past scans from Firestore."""
+    scans = await history_client.get_recent_scans(limit=limit)
+    return {"status": "success", "scans": scans}
 
 
 if __name__ == "__main__":
