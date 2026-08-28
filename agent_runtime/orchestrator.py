@@ -1,58 +1,54 @@
 import os
-import google.generativeai as genai
 from dotenv import load_dotenv
+from google.adk.agents import Agent
 
-# Load environment variables
+from retrieval.elastic_client import ElasticSearchClient
+
 load_dotenv()
 
-# Configure Google Gemini API key
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Single shared client instance - reused across requests, not recreated per-call
+es_client = ElasticSearchClient()
 
-class ScanOrchestrator:
+
+def search_known_vulnerabilities(contract_name: str) -> dict:
+    """Searches the historical exploit database for known vulnerability
+    patterns that match this contract's name or description.
+
+    Args:
+        contract_name: The name of the smart contract being audited.
+
+    Returns:
+        A dict with a status and a list of matched historical patterns.
     """
-    Orchestrates the multi-agent smart contract risk intelligence pipeline.
-    Utilizes Google Gemini to inspect code, find vulnerabilities, and suggest patches.
-    """
-    def __init__(self):
-        # Using Gemini 1.5 Pro for advanced code reasoning and deep context analysis
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
+    results = es_client.search_vulnerabilities(query=contract_name, size=3)
+    return {"status": "success", "matches": results}
 
-    async def analyze_contract(self, code: str, chain_type: str) -> dict:
-        """
-        Sends the smart contract code to Gemini with a specialized security auditing prompt.
-        Uses asynchronous generation to prevent blocking the FastAPI event loop.
-        """
-        # Input safety check
-        if not code or not code.strip():
-            return {
-                "status": "error",
-                "message": "Contract code cannot be empty."
-            }
 
-        prompt = f"""
-        You are an elite autonomous DeFi and Smart Contract security auditor.
-        Perform a rigorous security audit on the following {chain_type} smart contract code.
-        Identify any reentrancy risks, integer overflows, access control flaws, unchecked return values,
-        and potential financial exploit vectors.
-        
-        Smart Contract Code:
-        {code}
-        
-        Provide your analysis in a structured, clean format including:
-        1. Overall Trust Score (e.g., A, B+, C)
-        2. List of vulnerabilities with severity levels and approximate lines
-        3. Actionable remediation or patch recommendations
-        """
-        
-        try:
-            # Using generate_content_async for true non-blocking async execution
-            response = await self.model.generate_content_async(prompt)
-            return {
-                "status": "success",
-                "analysis": response.text
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+# NOTE: verify this model id against the current Vertex AI / Google AI Studio
+# console before submission - Google renames/rotates these periodically.
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+
+root_agent = Agent(
+    model=GEMINI_MODEL,
+    name="defiguard_audit_agent",
+    description=(
+        "Autonomous security auditor for DeFi smart contracts. "
+        "Combines historical exploit retrieval with deep code reasoning."
+    ),
+    instruction="""You are an elite autonomous DeFi and Smart Contract security auditor.
+
+    When given smart contract code and a contract name:
+    1. Call search_known_vulnerabilities with the contract name to check for
+       matching historical exploit patterns before forming your judgment.
+    2. Perform a rigorous security audit covering: reentrancy risks, integer
+       overflows/underflows, access control flaws, unchecked return values,
+       and financial exploit vectors.
+    3. Return a structured report containing:
+       - An overall Trust Score (A, B+, C, etc.)
+       - A list of vulnerabilities with severity levels and approximate line numbers
+       - Actionable remediation or patch recommendations
+
+    Ground your findings in the actual code provided - do not invent line
+    numbers or vulnerabilities that are not present in the code.""",
+    tools=[search_known_vulnerabilities],
+)
