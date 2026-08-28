@@ -49,9 +49,10 @@ DeFiGuard-AI/
 ├── LICENSE # Apache 2.0 License
 ├── README.md
 └── requirements.txt
+```
 ---
 *(Architecture diagram: see `docs/architecture.png` — TODO: add diagram)*
-```
+
 ---
 
 ## ⚙️ Tech Stack
