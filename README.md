@@ -119,7 +119,21 @@ gcloud run deploy defiguard-backend \
 After deployment, update `ALLOWED_ORIGINS` in your backend env and `API_URL` in `frontend/app.py` to point to the deployed Cloud Run URL.
 
 ---
+### ⚠️ Deployment Status
 
+Cloud Run deployment was fully prepared (Dockerfile, deploy command, and 
+environment configuration are included above and were tested against a 
+live GCP project). However, deployment could not be completed at 
+submission time because Google Cloud requires a payment method on file 
+to activate billing — even for free-tier usage — and the author did not 
+have access to a credit/debit card or bank account at the time of 
+submission.
+
+The backend and ADK agent were fully tested and verified working locally 
+(see demo video). All code is Cloud Run-ready; deployment requires only 
+running the command in Step 6 once a billing account is linked.
+
+---
 ## 📄 License
 
 Distributed under the Apache 2.0 License. See `LICENSE` for more information.
