@@ -60,7 +60,7 @@ DeFiGuard-AI/
 | Layer | Technology |
 |---|---|
 | **Model** | Google Gemini 3.5 (via Gemini API / Google AI Studio) |
-| **Agent Framework** | Google Agent Development Kit (`google-adk`) |
+| **Agent Framework** | Google Agent Development Kit (`google-adk==2.5.0`) |
 | **Retrieval** | Elasticsearch (BM25 pattern matching) |
 | **Persistence** | Google Cloud Firestore |
 | **Backend** | FastAPI, Uvicorn, Pydantic |
